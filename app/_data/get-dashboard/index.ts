@@ -49,17 +49,24 @@ export const getDashboard = async (month: string) => {
       })
     )._sum.amount,
   );
-  const typesPercentage: TransactionPercentagePerType = {
-    [TransactionType.DEPOSIT]: Math.round(
-      (Number(depositsTotal || 0) / Number(transactionsTotal)) * 100,
-    ),
-    [TransactionType.EXPENSE]: Math.round(
-      (Number(expensesTotal || 0) / Number(transactionsTotal)) * 100,
-    ),
-    [TransactionType.INVESTMENT]: Math.round(
-      (Number(investmentsTotal || 0) / Number(transactionsTotal)) * 100,
-    ),
-  };
+  const typesPercentage: TransactionPercentagePerType =
+    transactionsTotal > 0
+      ? {
+          [TransactionType.DEPOSIT]: Math.round(
+            (depositsTotal / transactionsTotal) * 100,
+          ),
+          [TransactionType.EXPENSE]: Math.round(
+            (expensesTotal / transactionsTotal) * 100,
+          ),
+          [TransactionType.INVESTMENT]: Math.round(
+            (investmentsTotal / transactionsTotal) * 100,
+          ),
+        }
+      : {
+          [TransactionType.DEPOSIT]: 0,
+          [TransactionType.EXPENSE]: 0,
+          [TransactionType.INVESTMENT]: 0,
+        };
 
   const totalExpensePerCategory: TotalExpensePerCategory[] = (
     await db.transaction.groupBy({
@@ -75,9 +82,10 @@ export const getDashboard = async (month: string) => {
   ).map((category) => ({
     category: category.category,
     totalAmount: Number(category._sum.amount),
-    percentageOfTotal: Math.round(
-      (Number(category._sum.amount) / Number(expensesTotal)) * 100,
-    ),
+    percentageOfTotal:
+      expensesTotal > 0
+        ? Math.round((Number(category._sum.amount) / expensesTotal) * 100)
+        : 0,
   }));
 
   const lastTransactions = await db.transaction.findMany({
