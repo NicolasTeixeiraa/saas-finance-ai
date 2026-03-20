@@ -17,6 +17,8 @@ import { useState } from "react";
 import { ScrollArea } from "@/app/_components/ui/scroll-area";
 import Markdown from "react-markdown";
 import Link from "next/link";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import AiReportPdf from "./ai-report-pdf";
 
 interface AiReportButtonProps {
   hasProPlan: boolean;
@@ -62,6 +64,20 @@ const AiReportButton = ({ month, hasProPlan }: AiReportButtonProps) => {
               <DialogClose asChild>
                 <Button variant="ghost">Cancelar</Button>
               </DialogClose>
+
+              {report ? (
+                <PDFDownloadLink
+                  document={<AiReportPdf report={report} month={month} />}
+                  fileName={`relatorio-financeiro-${month}-2026.pdf`}
+                >
+                  {({ loading }) => (
+                    <Button type="button" variant="outline" disabled={loading}>
+                      {loading ? "Gerando PDF..." : "Baixar PDF"}
+                    </Button>
+                  )}
+                </PDFDownloadLink>
+              ) : null}
+
               <Button
                 onClick={handleGenerateReportClick}
                 disabled={reportIsLoading}
